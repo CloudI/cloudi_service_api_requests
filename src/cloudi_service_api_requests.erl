@@ -66,7 +66,7 @@
 -record(state,
     {
         functions, % method -> function lookup
-        formats = cloudi_x_trie:new([
+        formats = trie:new([
             {"erlang",
              fun format_erlang/4},
             {"json_rpc",
@@ -96,9 +96,9 @@ cloudi_service_init(_Args, Prefix, Dispatcher) ->
             Arity == 2 ->
                 cloudi_service:subscribe(Dispatcher, FormatMethod ++ "/post")
         end,
-        cloudi_x_trie:store(MethodString, F, Functions)
-    end, cloudi_x_trie:new(),
-    cloudi_x_reltool_util:module_exports(cloudi_service_api)),
+        trie:store(MethodString, F, Functions)
+    end, trie:new(),
+    reltool_util:module_exports(cloudi_service_api)),
     cloudi_service:subscribe(Dispatcher, "json_rpc/"),
     cloudi_service:subscribe(Dispatcher, "json_rpc//post"),
     {ok, #state{functions = CloudIServiceAPI,
@@ -116,9 +116,9 @@ cloudi_service_handle_request(_Type, _Name, Pattern, _RequestInfo, Request,
         [] ->
             undefined;
         Method ->
-            cloudi_x_trie:fetch(Method, Functions)
+            trie:fetch(Method, Functions)
     end,
-    FormatF = cloudi_x_trie:fetch(Format, Formats),
+    FormatF = trie:fetch(Format, Formats),
     Response = FormatF(FunctionArity, Request, Timeout, Functions),
     {reply, cloudi_response:new(Request, Response), State}.
 
@@ -189,7 +189,7 @@ format_erlang_f(F, 1, Input, Timeout) ->
 
 format_json_rpc(undefined, Input, Timeout, Functions) ->
     {Method, Params, Id} = cloudi_json_rpc:request_to_term(Input),
-    try (case cloudi_x_trie:fetch(erlang:binary_to_list(Method), Functions) of
+    try (case trie:fetch(erlang:binary_to_list(Method), Functions) of
         F when Params == [], is_function(F, 1) ->
             F(Timeout);
         F when length(Params) == 1, is_function(F, 2) ->
