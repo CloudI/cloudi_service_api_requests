@@ -3,7 +3,7 @@
 
 {application, cloudi_service_api_requests, 
   [{description, "CloudI Service API Service"},
-   {vsn, "1.3.2"},
+   {vsn, "1.3.3"},
    {modules, [
         cloudi_json_rpc,
         cloudi_service_api_requests
