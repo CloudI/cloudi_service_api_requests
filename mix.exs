@@ -3,7 +3,7 @@ defmodule CloudIServiceApiRequests do
 
   def project do
     [app: :cloudi_service_api_requests,
-     version: "1.5.3",
+     version: "1.5.4",
      language: :erlang,
      description: description,
      package: package,
@@ -11,8 +11,8 @@ defmodule CloudIServiceApiRequests do
   end
 
   defp deps do
-    [{:cloudi_core, "~> 1.5.3"},
-     {:trie, "~> 1.5.3"},
+    [{:cloudi_core, "~> 1.5.4"},
+     {:trie, "~> 1.5.4"},
      {:jsx, "~> 2.8.0"}]
   end
 
