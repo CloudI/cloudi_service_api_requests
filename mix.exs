@@ -27,7 +27,7 @@ defmodule CloudIServiceApiRequests do
     [files: ~w(src doc rebar.config README.markdown),
      maintainers: ["Michael Truog"],
      licenses: ["MIT"],
-     links: %{"Website" => "http://cloudi.org",
+     links: %{"Website" => "https://cloudi.org",
               "GitHub" => "https://github.com/CloudI/" <>
                           "cloudi_service_api_requests"}]
    end
