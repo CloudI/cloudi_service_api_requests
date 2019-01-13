@@ -9,7 +9,7 @@
 %%%
 %%% MIT License
 %%%
-%%% Copyright (c) 2011-2018 Michael Truog <mjtruog at protonmail dot com>
+%%% Copyright (c) 2011-2019 Michael Truog <mjtruog at protonmail dot com>
 %%%
 %%% Permission is hereby granted, free of charge, to any person obtaining a
 %%% copy of this software and associated documentation files (the "Software"),
@@ -30,8 +30,8 @@
 %%% DEALINGS IN THE SOFTWARE.
 %%%
 %%% @author Michael Truog <mjtruog at protonmail dot com>
-%%% @copyright 2011-2018 Michael Truog
-%%% @version 1.7.5 {@date} {@time}
+%%% @copyright 2011-2019 Michael Truog
+%%% @version 1.7.6 {@date} {@time}
 %%%------------------------------------------------------------------------
 
 -module(cloudi_service_api_requests).
@@ -40,6 +40,12 @@
 -behaviour(cloudi_service).
 
 %% external interface
+-export([from_erl/2,
+         from_json/2,
+         to_erl/2,
+         to_erl/3,
+         to_json/2,
+         to_json/3]).
 
 %% cloudi_service callbacks
 -export([cloudi_service_init/4,
@@ -61,6 +67,50 @@
 %%%------------------------------------------------------------------------
 %%% External interface functions
 %%%------------------------------------------------------------------------
+
+-spec from_erl(_Method :: atom(),
+               Request :: binary()) ->
+    any().
+
+from_erl(_Method, Request) ->
+    convert_erlang_to_term(Request).
+
+-spec from_json(Method :: atom(),
+                Request :: binary()) ->
+    any().
+
+from_json(Method, Request) ->
+    convert_json_to_term(Method, Request).
+
+-spec to_erl(Method :: atom(),
+             Result :: any()) ->
+    binary().
+
+to_erl(Method, Result) ->
+    to_erl(Method, Result, true).
+
+-spec to_erl(Method :: atom(),
+             Result :: any(),
+             Space :: boolean()) ->
+    binary().
+
+to_erl(Method, Result, Space) ->
+    convert_term_to_erlang(convert_api_data(Method, Result), Space).
+
+-spec to_json(Method :: atom(),
+              Result :: any()) ->
+    binary().
+
+to_json(Method, Result) ->
+    to_json(Method, Result, true).
+
+-spec to_json(Method :: atom(),
+              Result :: any(),
+              Space :: boolean()) ->
+    binary().
+
+to_json(Method, Result, Space) ->
+    convert_term_to_json(convert_api_data(Method, Result), Method, Space).
 
 %%%------------------------------------------------------------------------
 %%% Callback functions from cloudi_service
@@ -157,7 +207,7 @@ format_json_call(Method, 1, _, Timeout) ->
             <<>>
     end;
 format_json_call(Method, 2, Request, Timeout) ->
-    Arg1 = convert_json_to_term(Request, Method),
+    Arg1 = convert_json_to_term(Method, Request),
     try cloudi_service_api_call(Method, Arg1, Timeout) of
         Result ->
             convert_term_to_json(Result, Method, true)
@@ -208,7 +258,7 @@ format_json_rpc_call(_, 2, Param, _, Id)
     when not is_binary(Param) ->
     cloudi_json_rpc:error_invalid_params(Id);
 format_json_rpc_call(Method, 2, Param, Timeout, Id) ->
-    Arg1 = convert_json_to_term(Param, Method),
+    Arg1 = convert_json_to_term(Method, Param),
     try cloudi_service_api_call(Method, Arg1, Timeout) of
         Result ->
             ResultJSON = convert_term_to_json(Result, Method, false),
@@ -219,81 +269,63 @@ format_json_rpc_call(Method, 2, Param, Timeout, Id) ->
             <<>>
     end.
 
-cloudi_service_api_call(services = Method, Timeout) ->
-    case cloudi_service_api:Method(Timeout) of
-        {ok, L} ->
-            {ok, [{service_id(ID), Data} ||
-                  {ID, Data} <- L]};
-        {error, _} = Error ->
-            Error
-    end;
-cloudi_service_api_call(code_status = Method, Timeout) ->
-    case cloudi_service_api:Method(Timeout) of
-        {ok, Status} ->
-            {runtime_cloudi_changes,
-             RuntimeChanges} = lists:keyfind(runtime_cloudi_changes, 1, Status),
-            RuntimeChangesNew = lists:map(fun(RuntimeChange) ->
-                {service_ids,
-                 IDs} = lists:keyfind(service_ids, 1, RuntimeChange),
-                lists:keyreplace(service_ids, 1, RuntimeChange,
-                                 {service_ids, [service_id(ID) || ID <- IDs]})
-            end, RuntimeChanges),
-            StatusNew = lists:keyreplace(runtime_cloudi_changes, 1, Status,
-                                         {runtime_cloudi_changes,
-                                          RuntimeChangesNew}),
-            {ok, StatusNew};
-        {error, _} = Error ->
-            Error
-    end;
 cloudi_service_api_call(Method, Timeout) ->
-    cloudi_service_api:Method(Timeout).
+    convert_api_data(Method, cloudi_service_api:Method(Timeout)).
 
-cloudi_service_api_call(Method, Input, Timeout)
-    when Method =:= services_search;
-         Method =:= services_status ->
-    case cloudi_service_api:Method(Input, Timeout) of
-        {ok, L} ->
-            {ok, [{service_id(ID), Data} ||
-                  {ID, Data} <- L]};
-        {error, _} = Error ->
-            Error
-    end;
-cloudi_service_api_call(services_add = Method, Input, Timeout) ->
-    case cloudi_service_api:Method(Input, Timeout) of
-        {ok, L} ->
-            {ok, [service_id(ID) || ID <- L]};
-        {error, _} = Error ->
-            Error
-    end;
-cloudi_service_api_call(services_update = Method, Input, Timeout) ->
-    case cloudi_service_api:Method(Input, Timeout) of
-        {ok, SuccessSet} ->
-            {ok, [[service_id(ID) || ID <- L] || L <- SuccessSet]};
-        {error, {ErrorL, Reason}, SuccessSet} ->
-            {error,
-             {[service_id(ID) || ID <- ErrorL], Reason},
-             [[service_id(ID) || ID <- L] || L <- SuccessSet]};
-        {error, _} = Error ->
-            Error
-    end;
 cloudi_service_api_call(Method, Input, Timeout) ->
-    cloudi_service_api:Method(Input, Timeout).
+    convert_api_data(Method, cloudi_service_api:Method(Input, Timeout)).
 
-service_id(ID) ->
-    uuid:uuid_to_string(ID, list_nodash).
+convert_api_data(Method,
+                 {ok, L})
+    when Method =:= services;
+         Method =:= services_search;
+         Method =:= services_status ->
+    {ok, [{service_id(ID), Data} || {ID, Data} <- L]};
+convert_api_data(code_status,
+                 {ok, Status}) ->
+    {runtime_cloudi_changes,
+     RuntimeChanges} = lists:keyfind(runtime_cloudi_changes, 1, Status),
+    RuntimeChangesNew = lists:map(fun(RuntimeChange) ->
+        {service_ids,
+         IDs} = lists:keyfind(service_ids, 1, RuntimeChange),
+        lists:keyreplace(service_ids, 1, RuntimeChange,
+                         {service_ids, [service_id(ID) || ID <- IDs]})
+    end, RuntimeChanges),
+    StatusNew = lists:keyreplace(runtime_cloudi_changes, 1, Status,
+                                 {runtime_cloudi_changes,
+                                  RuntimeChangesNew}),
+    {ok, StatusNew};
+convert_api_data(services_add,
+                 {ok, L}) ->
+    {ok, [service_id(ID) || ID <- L]};
+convert_api_data(services_update,
+                 {ok, SuccessSet}) ->
+    {ok, [[service_id(ID) || ID <- L] || L <- SuccessSet]};
+convert_api_data(services_update,
+                 {error, {ErrorL, Reason}, SuccessSet}) ->
+    {error,
+     {[service_id(ID) || ID <- ErrorL], Reason},
+     [[service_id(ID) || ID <- L] || L <- SuccessSet]};
+convert_api_data(_Method, Result) ->
+    Result.
 
 convert_erlang_to_term(Request) ->
     cloudi_string:binary_to_term(Request).
 
-convert_term_to_erlang({ok, Result}) ->
-    convert_term_to_erlang_string(Result);
 convert_term_to_erlang(Result) ->
-    convert_term_to_erlang_string(Result).
+    convert_term_to_erlang(Result, true).
 
-convert_term_to_erlang_string(Result) ->
-    cloudi_string:format_to_binary("~p", [Result]).
+convert_term_to_erlang({ok, Result}, Space) ->
+    convert_term_to_erlang_string(Result, Space);
+convert_term_to_erlang(Result, Space) ->
+    convert_term_to_erlang_string(Result, Space).
 
-convert_json_to_term(Request, Method)
+convert_term_to_erlang_string(Result, true) ->
+    cloudi_string:format_to_binary("~p", [Result]);
+convert_term_to_erlang_string(Result, false) ->
+    cloudi_string:term_to_binary_compact(Result).
+
+convert_json_to_term(Method, Request)
     when Method =:= acl_add ->
     case json_decode(Request) of
         [_ | _] = L ->
@@ -301,7 +333,7 @@ convert_json_to_term(Request, Method)
         _ ->
             invalid
     end;
-convert_json_to_term(Request, Method)
+convert_json_to_term(Method, Request)
     when Method =:= acl_remove;
          Method =:= nodes_status ->
     case json_decode(Request) of
@@ -310,7 +342,7 @@ convert_json_to_term(Request, Method)
         _ ->
             invalid
     end;
-convert_json_to_term(Request, Method)
+convert_json_to_term(Method, Request)
     when Method =:= service_subscriptions;
          Method =:= logging_file_set;
          Method =:= code_path_add;
@@ -321,7 +353,7 @@ convert_json_to_term(Request, Method)
         _ ->
             invalid
     end;
-convert_json_to_term(Request, Method)
+convert_json_to_term(Method, Request)
     when Method =:= services_add ->
     case json_decode(Request) of
         [_ | _] = L ->
@@ -329,7 +361,7 @@ convert_json_to_term(Request, Method)
         _ ->
             invalid
     end;
-convert_json_to_term(Request, Method)
+convert_json_to_term(Method, Request)
     when Method =:= services_remove;
          Method =:= services_restart;
          Method =:= services_status ->
@@ -339,7 +371,7 @@ convert_json_to_term(Request, Method)
         _ ->
             invalid
     end;
-convert_json_to_term(Request, Method)
+convert_json_to_term(Method, Request)
     when Method =:= services_search ->
     case json_decode(Request) of
         Binary when is_binary(Binary) ->
@@ -352,7 +384,7 @@ convert_json_to_term(Request, Method)
         _ ->
             invalid
     end;
-convert_json_to_term(Request, Method)
+convert_json_to_term(Method, Request)
     when Method =:= services_update ->
     case json_decode(Request) of
         List when is_list(List) ->
@@ -360,7 +392,7 @@ convert_json_to_term(Request, Method)
         _ ->
             invalid
     end;
-convert_json_to_term(Request, Method)
+convert_json_to_term(Method, Request)
     when Method =:= nodes_add;
          Method =:= nodes_remove ->
     case json_decode(Request) of
@@ -369,7 +401,7 @@ convert_json_to_term(Request, Method)
         _ ->
             invalid
     end;
-convert_json_to_term(Request, Method)
+convert_json_to_term(Method, Request)
     when Method =:= logging_level_set;
          Method =:= logging_stdout_set ->
     case json_decode(Request) of
@@ -378,7 +410,7 @@ convert_json_to_term(Request, Method)
         _ ->
             invalid
     end;
-convert_json_to_term(Request, Method)
+convert_json_to_term(Method, Request)
     when Method =:= nodes_set;
          Method =:= logging_set ->
     case json_decode(Request) of
@@ -387,7 +419,7 @@ convert_json_to_term(Request, Method)
         _ ->
             invalid
     end;
-convert_json_to_term(Request, Method)
+convert_json_to_term(Method, Request)
     when Method =:= logging_syslog_set;
          Method =:= logging_formatters_set ->
     case json_decode(Request) of
@@ -398,7 +430,7 @@ convert_json_to_term(Request, Method)
         _ ->
             invalid
     end;
-convert_json_to_term(Request, Method)
+convert_json_to_term(Method, Request)
     when Method =:= logging_redirect_set ->
     case json_decode(Request) of
         Binary when is_binary(Binary) ->
@@ -808,4 +840,7 @@ json_encode(Term, false) ->
 
 json_decode(Binary) ->
     jsx:decode(Binary).
+
+service_id(ID) ->
+    uuid:uuid_to_string(ID, list_nodash).
 
