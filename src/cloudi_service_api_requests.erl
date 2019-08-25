@@ -190,6 +190,8 @@ format_erlang_call(Method, 2, Request, Timeout) ->
         Result ->
             convert_term_to_erlang(Result)
     catch
+        exit:invalid_input ->
+            <<>>;
         ErrorType:Error ->
             ?LOG_DEBUG("~p ~p", [ErrorType, Error]),
             <<>>
@@ -213,6 +215,8 @@ format_json_call(Method, 2, Request, Timeout) ->
         Result ->
             convert_term_to_json(Result, Method, true)
     catch
+        exit:invalid_input ->
+            <<>>;
         ErrorType:Error ->
             ?LOG_DEBUG("~p ~p", [ErrorType, Error]),
             <<>>
@@ -265,6 +269,8 @@ format_json_rpc_call(Method, 2, Param, Timeout, Id) ->
             ResultJSON = convert_term_to_json(Result, Method, false),
             cloudi_json_rpc:response_to_json(ResultJSON, Id)
     catch
+        exit:invalid_input ->
+            <<>>;
         ErrorType:Error ->
             ?LOG_DEBUG("~p ~p", [ErrorType, Error]),
             <<>>
@@ -273,6 +279,8 @@ format_json_rpc_call(Method, 2, Param, Timeout, Id) ->
 cloudi_service_api_call(Method, Timeout) ->
     convert_api_data(Method, cloudi_service_api:Method(Timeout)).
 
+cloudi_service_api_call(_, invalid, _) ->
+    erlang:exit(invalid_input);
 cloudi_service_api_call(Method, Input, Timeout) ->
     convert_api_data(Method, cloudi_service_api:Method(Input, Timeout)).
 
@@ -311,7 +319,11 @@ convert_api_data(_Method, Result) ->
     Result.
 
 convert_erlang_to_term(Request) ->
-    cloudi_string:binary_to_term(Request).
+    try cloudi_string:binary_to_term(Request)
+    catch
+        _:_ ->
+            invalid
+    end.
 
 convert_term_to_erlang(Result) ->
     convert_term_to_erlang(Result, true).
@@ -719,6 +731,7 @@ convert_term_to_json_service(#internal{prefix = Prefix,
               erlang:atom_to_binary(DestRefresh, utf8)} | Service3]
     end,
     [{<<"id">>, erlang:list_to_binary(Id)},
+     {<<"type">>, <<"internal">>},
      {<<"prefix">>, erlang:list_to_binary(Prefix)},
      {<<"module">>, erlang:atom_to_binary(Module, utf8)},
      {<<"args">>, cloudi_string:term_to_binary_compact(Args)} | ServiceN];
@@ -773,6 +786,7 @@ convert_term_to_json_service(#external{prefix = Prefix,
               erlang:atom_to_binary(DestRefresh, utf8)} | Service3]
     end,
     [{<<"id">>, erlang:list_to_binary(Id)},
+     {<<"type">>, <<"external">>},
      {<<"prefix">>, erlang:list_to_binary(Prefix)},
      {<<"file_path">>, erlang:list_to_binary(FilePath)},
      {<<"args">>, erlang:list_to_binary(Args)},
@@ -840,7 +854,11 @@ json_encode(Term, false) ->
     jsx:encode(Term).
 
 json_decode(Binary) ->
-    jsx:decode(Binary).
+    try jsx:decode(Binary)
+    catch
+        _:_ ->
+            invalid
+    end.
 
 service_id(ID) ->
     uuid:uuid_to_string(ID, list_nodash).
