@@ -6,7 +6,7 @@ defmodule CloudIServiceApiRequests do
 
   def project do
     [app: :cloudi_service_api_requests,
-     version: "2.0.0",
+     version: "2.0.1",
      language: :erlang,
      erlc_options: [
        :debug_info,
@@ -29,9 +29,9 @@ defmodule CloudIServiceApiRequests do
   end
 
   defp deps do
-    [{:cloudi_core, "~> 2.0.0"},
-     {:trie, "~> 2.0.0"},
-     {:jsx, "~> 2.8.3"}]
+    [{:cloudi_core, "~> 2.0.1"},
+     {:trie, "~> 2.0.1"},
+     {:jsx, "~> 3.0.0"}]
   end
 
   defp description do
@@ -39,7 +39,7 @@ defmodule CloudIServiceApiRequests do
   end
 
   defp package do
-    [files: ~w(src doc rebar.config README.markdown),
+    [files: ~w(src doc rebar.config README.markdown LICENSE),
      maintainers: ["Michael Truog"],
      licenses: ["MIT"],
      links: %{"Website" => "https://cloudi.org",

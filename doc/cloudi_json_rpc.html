@@ -13,9 +13,9 @@
 <ul class="index"><li><a href="#description">Description</a></li><li><a href="#types">Data Types</a></li><li><a href="#index">Function Index</a></li><li><a href="#functions">Function Details</a></li></ul>
    <h3><a name="CloudI_JSON_RPC">CloudI JSON RPC</a></h3>
    Implementation based on the version 2.0 of the JSON-RPC specification.
-<p>Copyright © 2011-2018 Michael Truog</p>
+<p>Copyright © 2011-2020 Michael Truog</p>
 
-<p><b>Version:</b> 1.7.4 Jun 3 2020 19:01:35
+<p><b>Version:</b> 2.0.1 Nov 26 2020 16:05:43
   ------------------------------------------------------------------------</p>
 <p><b>Authors:</b> Michael Truog (<a href="mailto:mjtruog at protonmail dot com"><tt>mjtruog at protonmail dot com</tt></a>).</p>
 
@@ -128,7 +128,7 @@
 
 <h3 class="function"><a name="request_to_term-1">request_to_term/1</a></h3>
 <div class="spec">
-<p><tt>request_to_term(Data::binary() | string()) -&gt; {<a href="#type-method">method()</a>, <a href="#type-params">params()</a>, <a href="#type-id">id()</a>}</tt><br></p>
+<p><tt>request_to_term(Data::binary()) -&gt; {<a href="#type-method">method()</a>, <a href="#type-params">params()</a>, <a href="#type-id">id()</a>}</tt><br></p>
 </div><p>
   <h4><a name="Parse_a_JSON-RPC_request_to_create_Erlang_terms.">Parse a JSON-RPC request to create Erlang terms.</a></h4>
 </p>
@@ -149,7 +149,7 @@
 
 <h3 class="function"><a name="response_to_term-1">response_to_term/1</a></h3>
 <div class="spec">
-<p><tt>response_to_term(Data::binary() | string()) -&gt; {<a href="#type-result">result()</a>, <a href="#type-error_code">error_code()</a> | null, <a href="#type-error_message">error_message()</a> | null, <a href="#type-id">id()</a>}</tt><br></p>
+<p><tt>response_to_term(Data::binary()) -&gt; {<a href="#type-result">result()</a>, <a href="#type-error_code">error_code()</a> | null, <a href="#type-error_message">error_message()</a> | null, <a href="#type-id">id()</a>}</tt><br></p>
 </div><p>
   <h4><a name="Parse_a_JSON-RPC_response_to_create_Erlang_terms.">Parse a JSON-RPC response to create Erlang terms.</a></h4>
 </p>
