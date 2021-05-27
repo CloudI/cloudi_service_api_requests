@@ -15,7 +15,7 @@
    Implementation based on the version 2.0 of the JSON-RPC specification.
 <p>Copyright © 2011-2020 Michael Truog</p>
 
-<p><b>Version:</b> 2.0.1 Nov 26 2020 16:05:43
+<p><b>Version:</b> 2.0.1 May 26 2021 20:06:32
   ------------------------------------------------------------------------</p>
 <p><b>Authors:</b> Michael Truog (<a href="mailto:mjtruog at protonmail dot com"><tt>mjtruog at protonmail dot com</tt></a>).</p>
 
@@ -80,6 +80,7 @@
 <h3 class="function"><a name="error_internal_error-1">error_internal_error/1</a></h3>
 <div class="spec">
 <p><tt>error_internal_error(Id::<a href="#type-id">id()</a>) -&gt; binary()</tt><br></p>
+<p> </p>
 </div><p>
   <h4><a name="Internal_JSON-RPC_error.">Internal JSON-RPC error.</a></h4>
 </p>
@@ -87,6 +88,7 @@
 <h3 class="function"><a name="error_invalid_params-1">error_invalid_params/1</a></h3>
 <div class="spec">
 <p><tt>error_invalid_params(Id::<a href="#type-id">id()</a>) -&gt; binary()</tt><br></p>
+<p> </p>
 </div><p>
   <h4><a name="Invalid_method_parameter(s).">Invalid method parameter(s).</a></h4>
 </p>
@@ -94,6 +96,7 @@
 <h3 class="function"><a name="error_invalid_request-0">error_invalid_request/0</a></h3>
 <div class="spec">
 <p><tt>error_invalid_request() -&gt; binary()</tt><br></p>
+<p> </p>
 </div><p>
   <h4><a name="The_JSON_sent_is_not_a_valid_Request_object.">The JSON sent is not a valid Request object.</a></h4>
 </p>
@@ -101,6 +104,7 @@
 <h3 class="function"><a name="error_method_not_found-1">error_method_not_found/1</a></h3>
 <div class="spec">
 <p><tt>error_method_not_found(Id::<a href="#type-id">id()</a>) -&gt; binary()</tt><br></p>
+<p> </p>
 </div><p>
   <h4><a name="The_method_does_not_exist_/_is_not_available.">The method does not exist / is not available.</a></h4>
 </p>
@@ -108,6 +112,7 @@
 <h3 class="function"><a name="error_parsing-0">error_parsing/0</a></h3>
 <div class="spec">
 <p><tt>error_parsing() -&gt; binary()</tt><br></p>
+<p> </p>
 </div><p>
   <h4><a name="Invalid_JSON_was_received_by_the_server.">Invalid JSON was received by the server.</a></h4>
 </p>
@@ -115,6 +120,7 @@
 <h3 class="function"><a name="request_to_json-2">request_to_json/2</a></h3>
 <div class="spec">
 <p><tt>request_to_json(Method::atom() | string() | binary(), Id::<a href="#type-id">id()</a>) -&gt; binary()</tt><br></p>
+<p> </p>
 </div><p>
   <h4><a name="Create_a_JSON-RPC_request_in_a_JSON_binary.">Create a JSON-RPC request in a JSON binary.</a></h4>
 </p>
@@ -122,6 +128,7 @@
 <h3 class="function"><a name="request_to_json-3">request_to_json/3</a></h3>
 <div class="spec">
 <p><tt>request_to_json(Method::atom() | string() | binary(), Params::<a href="#type-params">params()</a>, Id::<a href="#type-id">id()</a>) -&gt; binary()</tt><br></p>
+<p> </p>
 </div><p>
   <h4><a name="Create_a_JSON-RPC_request_with_parameters_in_a_JSON_binary.">Create a JSON-RPC request with parameters in a JSON binary.</a></h4>
 </p>
@@ -129,6 +136,7 @@
 <h3 class="function"><a name="request_to_term-1">request_to_term/1</a></h3>
 <div class="spec">
 <p><tt>request_to_term(Data::binary()) -&gt; {<a href="#type-method">method()</a>, <a href="#type-params">params()</a>, <a href="#type-id">id()</a>}</tt><br></p>
+<p> </p>
 </div><p>
   <h4><a name="Parse_a_JSON-RPC_request_to_create_Erlang_terms.">Parse a JSON-RPC request to create Erlang terms.</a></h4>
 </p>
@@ -136,6 +144,7 @@
 <h3 class="function"><a name="response_to_json-2">response_to_json/2</a></h3>
 <div class="spec">
 <p><tt>response_to_json(Result::<a href="#type-result">result()</a>, Id::<a href="#type-id">id()</a>) -&gt; binary()</tt><br></p>
+<p> </p>
 </div><p>
   <h4><a name="Create_a_JSON-RPC_response_in_a_JSON_binary.">Create a JSON-RPC response in a JSON binary.</a></h4>
 </p>
@@ -143,6 +152,7 @@
 <h3 class="function"><a name="response_to_json-4">response_to_json/4</a></h3>
 <div class="spec">
 <p><tt>response_to_json(Result::<a href="#type-result">result()</a> | null, ErrorCode::<a href="#type-error_code">error_code()</a> | null, ErrorMessage::<a href="#type-error_message">error_message()</a> | null, Id::<a href="#type-id">id()</a>) -&gt; binary()</tt><br></p>
+<p> </p>
 </div><p>
   <h4><a name="Create_a_JSON-RPC_error_response_in_a_JSON_binary.">Create a JSON-RPC error response in a JSON binary.</a></h4>
 </p>
@@ -150,6 +160,7 @@
 <h3 class="function"><a name="response_to_term-1">response_to_term/1</a></h3>
 <div class="spec">
 <p><tt>response_to_term(Data::binary()) -&gt; {<a href="#type-result">result()</a>, <a href="#type-error_code">error_code()</a> | null, <a href="#type-error_message">error_message()</a> | null, <a href="#type-id">id()</a>}</tt><br></p>
+<p> </p>
 </div><p>
   <h4><a name="Parse_a_JSON-RPC_response_to_create_Erlang_terms.">Parse a JSON-RPC response to create Erlang terms.</a></h4>
 </p>
