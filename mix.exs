@@ -6,7 +6,7 @@ defmodule CloudIServiceApiRequests do
 
   def project do
     [app: :cloudi_service_api_requests,
-     version: "2.0.2",
+     version: "2.0.3",
      language: :erlang,
      erlc_options: [
        :debug_info,
@@ -29,9 +29,9 @@ defmodule CloudIServiceApiRequests do
   end
 
   defp deps do
-    [{:cloudi_core, "~> 2.0.2"},
-     {:trie, "~> 2.0.2"},
-     {:jsx, "~> 3.1.0"}]
+    [{:cloudi_core, "~> 2.0.3", app: false},
+     {:trie, "~> 2.0.3", app: false},
+     {:jsx, "~> 3.1.0", app: false}]
   end
 
   defp description do
