@@ -6,31 +6,23 @@ defmodule CloudIServiceApiRequests do
 
   def project do
     [app: :cloudi_service_api_requests,
-     version: "2.0.4",
+     version: "2.0.5",
      language: :erlang,
      erlc_options: [
+       :deterministic,
        :debug_info,
-       :warnings_as_errors,
-       :strict_validation,
-       :warn_bif_clash,
-       :warn_deprecated_function,
-       :warn_export_all,
        :warn_export_vars,
-       :warn_exported_vars,
-       :warn_obsolete_guard,
-       :warn_shadow_vars,
        :warn_unused_import,
-       :warn_unused_function,
-       :warn_unused_record,
-       :warn_unused_vars],
+       #:warn_missing_spec,
+       :warnings_as_errors],
      description: description(),
      package: package(),
      deps: deps()]
   end
 
   defp deps do
-    [{:cloudi_core, ">= 2.0.4"},
-     {:trie, ">= 2.0.4"},
+    [{:cloudi_core, ">= 2.0.5"},
+     {:trie, ">= 2.0.5"},
      {:jsx, ">= 3.1.0"}]
   end
 
